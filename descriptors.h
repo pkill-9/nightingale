@@ -6,6 +6,8 @@
 #ifndef _DESCRIPTORS_H
 #define _DESCRIPTORS_H
 
+#include "stdint.h"
+
 /**********************************************************/
 
 /**
@@ -44,29 +46,29 @@ __attribute__ ((packed));
 
 /** macros for setting fields of the access bitmap */
 /** present bit must be set for all valid descriptors */
-#define PRESENT(x)              ((x) << 7)
+#define GDT_PRESENT(x)          ((x) << 7)
 
 /** priv bits, defines the ring level of this segment. 0 means kernel
  *  mode, 3 means userland/lowest privilege */
-#define RING_LEVEL(x)           (((x) & 0x03) << 5)
+#define GDT_RING_LEVEL(x)       (((x) & 0x03) << 5)
 
 /** if executable=1, the contents of this segment can be executed */
-#define EXECUTABLE(x)           ((x) << 3)
+#define GDT_EXECUTABLE(x)       ((x) << 3)
 
 /** read/write permission bit. Setting this bit enables write permission
  *  for a data segment, or read permission for a code segment. Note that
  *  write access is never allowed for code segments, and read access is
  *  always allowed for data segments.
  */
-#define READ_WRITE(x)           ((x) << 1)
+#define GDT_READ_WRITE(x)       ((x) << 1)
 
 
 /** macros for setting fields of the flags nibble */
 /** granularity = 1: limit is in units of 4 kB */
-#define GRANULARITY(x)          ((x) << 7)
+#define GDT_GRANULARITY(x)      ((x) << 7)
 
 /** 32 bit or 16 bit. size=1: 32 bit segment. */
-#define SIZE(x)                 ((x) << 6)
+#define GDT_SIZE(x)             ((x) << 6)
 
 
 /**********************************************************/
