@@ -18,6 +18,7 @@
 PRIVATE void forward_cursor (void);
 PRIVATE void back_cursor (void);
 PRIVATE void scroll (void);
+PRIVATE void process_control_char (char c);
 
 /**********************************************************/
 
@@ -76,6 +77,99 @@ set_colour (colour)
     unsigned char colour;
 {
     text_colour = colour;
+}
+
+/**********************************************************/
+
+/**
+ *  Print a single char at the current cursor position with the current
+ *  colour, and advance the cursor one space.
+ *
+ *  This function will also handle some non printable control characters,
+ *  such as tab, carriage return and line feed.
+ */
+    PUBLIC void
+print_char (character)
+    char character;
+{
+    int index = (cursor_row * DISPLAY_COLUMNS + cursor_column) * 2;
+
+    /** for printable chars, we will simply copy the char to the correct
+     *  location in video memory and advance the cursor. If the char is
+     *  not printable, we will not advance the cursor (that would not work
+     *  with backspace for example). */
+    if (isprintable (character))
+    {
+        video_memory [index] = character;
+        video_memory [index + 1] = text_colour;
+        forward_cursor ();
+    }
+    else
+    {
+        process_control_char (character);
+    }
+}
+
+/**********************************************************/
+
+/**
+ *  Handles a selection of non printable characters.
+ *
+ *  \b: backspace. Erases the last character, and reverses the cursor.
+ *  \t: advances the cursor to the next horizontal tab space.
+ *  \n: move the cursor down to the next line.
+ *  \r: move the cursor to the start of the line.
+ *  \v: vertical tab. Advance the cursor down to the next tab line.
+ *  \f: form feed. Clears the screen.
+ */
+    PRIVATE void
+process_control_char (c)
+    char c;
+{
+    switch (c)
+    {
+    case '\b':
+        back_cursor ();
+        print_char (' ');
+        back_cursor ();
+        break;
+
+    case '\t':
+        cursor_row += TAB_WIDTH - cursor_row % TAB_WIDTH;
+
+        if (cursor_row >= DISPLAY_ROWS)
+            cursor_row = DISPLAY_ROWS - 1;
+
+        break;
+
+    case '\v':
+        cursor_column += TAB_WIDTH - cursor_column % TAB_WIDTH;
+
+        if (cursor_column >= DISPLAY_COLUMNS)
+            cursor_column = DISPLAY_COLUMNS - 1;
+
+        break;
+
+    case '\n':
+        if (cursor_row < DISPLAY_ROWS)
+        {
+            cursor_row ++;
+        }
+        else
+        {
+            scroll ();
+        }
+
+        break;
+
+    case '\r':
+        cursor_column = 0;
+        break;
+
+    case '\f':
+        clear_screen ();
+        break;
+    }
 }
 
 /**********************************************************/
