@@ -19,6 +19,7 @@ PRIVATE void forward_cursor (void);
 PRIVATE void back_cursor (void);
 PRIVATE void scroll (void);
 PRIVATE void process_control_char (char c);
+PRIVATE void clear_screen (void);
 
 /**********************************************************/
 
@@ -269,6 +270,18 @@ scroll (void)
     /** now clear the contents of the last line on the screen */
     for (int column = 0; column < DISPLAY_COLUMNS; column ++)
         video_memory [column * 2] = ' ';
+}
+
+/**********************************************************/
+
+/**
+ *  Clear the screen by filling all the lines with space characters.
+ */
+    PRIVATE void
+clear_screen (void)
+{
+    for (int i = 0; i < DISPLAY_ROWS * DISPLAY_COLUMNS; i ++)
+        video_memory [2 * i] = ' ';
 }
 
 /**********************************************************/
