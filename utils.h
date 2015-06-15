@@ -12,6 +12,9 @@ typedef int bool;
 #define false           0
 
 
+bool isprintable (char character);
+
+
 #endif /** _UTILS_H */
 
 /** vim: set ts=4 sw=4 et : */
