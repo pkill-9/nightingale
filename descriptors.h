@@ -92,7 +92,7 @@ __attribute__ ((packed));
 
 /** macros for setting the attribute bits of an IDT entry */
 /** present bit can be turned off for interrupts that are not in use */
-#define IDT_PRESENT(x)          ((x) << 7)
+#define IDT_PRESENT             0x80
 
 /** privilege required to invoke this interrupt */
 #define IDT_RING_LEVEL(x)       (((x) & 0x03) << 5)
