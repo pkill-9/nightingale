@@ -48,6 +48,17 @@ over_multiboot_header:
     lgdt    _gdtr
     lidt    _idtr
 
+# load kernel segment selectors into the segment registers.
+    jmp     $0x08:reload_cs
+
+reload_cs:
+    mov     $0x10, %ax
+    mov     %ax, %ds
+    mov     %ax, %es
+    mov     %ax, %fs
+    mov     %ax, %gs
+    mov     %ax, %ss
+
     push    %ebx
     call    _main
 
