@@ -45,8 +45,8 @@ over_multiboot_header:
 # initialise the GDT and IDT.
     call    _initialise_tables
 
-    lgdt    _gdt
-    lidt    _idt
+    lgdt    _gdtr
+    lidt    _idtr
 
     push    %ebx
     call    _main
