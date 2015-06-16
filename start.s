@@ -62,7 +62,7 @@ reload_cs:
     mov     %ax, %ss
 
     push    %ebx
-    call    _main
+    call    _nightingale_main
 
 /**********************************************************/
 

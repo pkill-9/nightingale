@@ -8,7 +8,7 @@
 /**********************************************************/
 
     PUBLIC void
-main (void)
+nightingale_main (void)
 {
     print_string ("It Works.\n");
 }
