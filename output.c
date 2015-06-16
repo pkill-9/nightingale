@@ -7,10 +7,6 @@
 
 /**********************************************************/
 
-PRIVATE void print_char (char c);
-
-/**********************************************************/
-
 /**
  *  Function to print an integer in human readable form (base 10).
  *
@@ -79,22 +75,6 @@ print_string (string)
 {
     while (*string != '\0')
         print_char (*string ++);
-}
-
-/**********************************************************/
-
-/**
- *  Invoke the BIOS to print a single character on the screen.
- */
-    PRIVATE void
-print_char (c)
-    char c;             // character to be printed.
-{
-    // turn any newline char into a carriage return line feed pair.
-    if (c == '\n')
-        bios_putchar ('\r');
-
-    bios_putchar (c);
 }
 
 /**********************************************************/

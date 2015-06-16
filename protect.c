@@ -4,6 +4,7 @@
  */
 
 #include "protect.h"
+#include "stdint.h"
 #include "descriptors.h"
 #include "utils.h"
 
@@ -24,10 +25,10 @@ initialise_tables (void)
     flat_gdt ();
     empty_idt ();
 
-    gdtr.base_address = &gdt;
+    gdtr.base_address = (uint32_t) &gdt;
     gdtr.size = sizeof (struct gdt_entry) * NUM_GDT_ENTRIES;
 
-    idtr.base_address = &idt;
+    idtr.base_address = (uint32_t) &idt;
     idtr.size = sizeof (struct idt_entry) * NUM_IDT_ENTRIES;
 }
 

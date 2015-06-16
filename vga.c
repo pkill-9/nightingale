@@ -3,11 +3,17 @@
  */
 
 #include "vga.h"
+#include "colours.h"
+#include "io.h"
+#include "memutils.h"
 #include "utils.h"
 
 /** text mode VGA is by default 80 columns by 25 rows */
 #define DISPLAY_ROWS            25
 #define DISPLAY_COLUMNS         80
+
+/** tabs are 8 spaces */
+#define TAB_WIDTH               8
 
 /** selectors for writing data to VGA hardware registers */
 #define CURSOR_LOW_BYTE         0x0F
@@ -232,7 +238,7 @@ forward_cursor (void)
  *  cursor.
  */
     PRIVATE void
-cursor_back (void)
+back_cursor (void)
 {
     if (cursor_column == 0)
     {
@@ -263,8 +269,8 @@ scroll (void)
 {
     for (int row = 1; row < DISPLAY_ROWS; row ++)
     {
-        memcopy (video_memory + (row + 1) * 2, video_memory + row * 2,
-          DISPLAY_COLUMNS * 2);
+        memcopy ((void *) video_memory + (row + 1) * 2, 
+          (void *) video_memory + row * 2, DISPLAY_COLUMNS * 2);
     }
 
     /** now clear the contents of the last line on the screen */

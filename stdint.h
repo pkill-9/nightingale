@@ -15,6 +15,9 @@ typedef unsigned int            uint32_t;
 typedef unsigned short int      uint16_t;
 typedef unsigned char           uint8_t;
 
+/** type for the size of buffers */
+typedef unsigned int            size_t;
+
 
 #endif /** _STDINT_H */
 

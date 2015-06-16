@@ -16,6 +16,7 @@ SECTIONS
         *(.data);
         *(.rodata*);
         *(COMMON);
+        STACK_BASE = 0x0007FFFF;
     }
 
     /DISCARD/ :

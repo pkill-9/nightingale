@@ -28,7 +28,7 @@ make_gdt_entry (entry, base, limit, flags, access_bits)
     entry->base_high = (uint8_t) (base >> 24) & 0xFF;
 
     entry->limit_low = (uint16_t) limit & 0xFFFF;
-    entry->flags_and_limit_high = (uint8_t) (limit >> 16) & 0x0F | 
+    entry->flags_and_limit_high = (uint8_t) ((limit >> 16) & 0x0F) | 
         (flags & 0x0F);
 
     entry->access_bits = access_bits | GDT_PRESENT (1);
@@ -57,7 +57,7 @@ make_idt_entry (entry, handler_address, segment_selector, attributes)
     entry->handler_high = (uint16_t) (handler_address >> 16) & 0xFFFF;
 
     entry->segment_selector = segment_selector;
-    entry->attributes = attributes | IDT_PRESENT (1);
+    entry->attributes = attributes | IDT_PRESENT;
 }
 
 /**********************************************************/

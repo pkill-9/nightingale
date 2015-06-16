@@ -1,5 +1,5 @@
 SRC = descriptors.c output.c protect.c utils.c vga.c main.c
-OBJS = descriptors.o io.o output.o protect.o start.o utils.o vga.o main.c
+OBJS = descriptors.o io.o output.o protect.o start.o utils.o vga.o main.o
 CC = gcc
 AS = as
 CFLAGS = -fno-hosted -fleading-underscore -nostdlib -Wall --std=c99
