@@ -3,6 +3,7 @@
  */
 
 #include "output.h"
+#include "vga.h"
 #include "utils.h"
 
 /**********************************************************/
@@ -61,6 +62,8 @@ print_int_hex (value)
 
         nibble_index -= 4;
     }
+
+    print_done ();
 }
 
 /**********************************************************/
@@ -75,6 +78,8 @@ print_string (string)
 {
     while (*string != '\0')
         print_char (*string ++);
+
+    print_done ();
 }
 
 /**********************************************************/

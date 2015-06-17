@@ -20,7 +20,7 @@ isprintable (character)
 {
     /** space has the smallest ASCII value of printable chars (0x20), and
      *  tilde ~ has the biggest value (0x7E). */
-    if (character > ' ' && character < '~')
+    if (character >= ' ' && character <= '~')
         return true;
 
     return false;

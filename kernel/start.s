@@ -39,27 +39,9 @@ multiboot_header:
 
 over_multiboot_header:
 # set up the stack for our kernel.
-    mov     $STACK_BASE, %esp
+    mov     $0xB002, %eax
+    mov     $0x0007FFFF, %esp
     mov     %esp, %ebp
-
-# initialise the GDT and IDT.
-    call    _initialise_tables
-
-    lgdt    _gdtr
-    lidt    _idtr
-
-# load kernel segment selectors into the segment registers.
-    push    $0x08
-    push    reload_cs
-    retf
-
-reload_cs:
-    mov     $0x10, %ax
-    mov     %ax, %ds
-    mov     %ax, %es
-    mov     %ax, %fs
-    mov     %ax, %gs
-    mov     %ax, %ss
 
     push    %ebx
     call    _nightingale_main

@@ -101,6 +101,10 @@ print_char (character)
 {
     int index = (cursor_row * DISPLAY_COLUMNS + cursor_column) * 2;
 
+    /** handle unix style line endings */
+    if (character == '\n')
+        print_char ('\r');
+
     /** for printable chars, we will simply copy the char to the correct
      *  location in video memory and advance the cursor. If the char is
      *  not printable, we will not advance the cursor (that would not work
