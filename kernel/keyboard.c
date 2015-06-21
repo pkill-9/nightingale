@@ -89,7 +89,9 @@ keypressed (scancode, map)
 
     default:
         keycode = map [(uint8_t) *scancode];
-        key_event_handlers [keycode].onpress (keycode);
+
+        if (key_event_handlers [keycode].onpress != NULL)
+            key_event_handlers [keycode].onpress (keycode);
     }
 }
 
@@ -118,7 +120,9 @@ keyreleased (scancode, map)
 
     default:
         keycode = map [(uint8_t) *scancode];
-        key_event_handlers [keycode].onrelease (keycode);
+
+        if (key_event_handlers [keycode].onrelease != NULL)
+            key_event_handlers [keycode].onrelease (keycode);
     }
 }
 
