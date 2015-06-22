@@ -3,6 +3,11 @@
  *  functions for sending and receiving data.
  */
 
+#include "stdint.h"
+#include "utils.h"
+#include "io.h"
+#include "ps2.h"
+
 /**********************************************************/
 
 PRIVATE void disable_ports (void);
@@ -51,7 +56,7 @@ ps2_get (void)
 {
     uint8_t status = inb (PS2_STATUS);
 
-    while (status & INPUT_AVAILABLE == 0)
+    while ((status & INPUT_AVAILABLE) == 0)
         status = inb (PS2_STATUS);
 
     return inb (PS2_DATA);
@@ -70,7 +75,7 @@ ps2_send (port, data)
 {
     uint8_t status = inb (PS2_STATUS);
 
-    while (status & BUSY != 0)
+    while ((status & BUSY) != 0)
         status = inb (PS2_STATUS);
 
     outb (port, data);
@@ -115,7 +120,7 @@ clear_buffer (void)
 {
     uint8_t status = inb (PS2_STATUS);
 
-    while (status & INPUT_AVAILABLE != 0)
+    while ((status & INPUT_AVAILABLE) != 0)
     {
         status = inb (PS2_STATUS);
         inb (PS2_DATA);
@@ -147,7 +152,7 @@ read_config_register (void)
  *  modified, and the modified value written with this function.
  */
     PRIVATE void
-write_config_registers (value)
+write_config_register (value)
     uint8_t value;              // new register contents to write.
 {
     ps2_send (PS2_COMMAND, WRITE_CONFIG);
