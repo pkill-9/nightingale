@@ -14,6 +14,9 @@
 #ifndef _KEYCODES_H
 #define _KEYCODES_H
 
+typedef unsigned short keycode_t;
+
+
 #define ESC                 1
 
 /** function keys */
@@ -122,17 +125,19 @@
 #define NUM_4               97
 #define NUM_2               98
 #define NUM_6               99
+#define NUM_5               100
 
-#define NUM_DIVIDE          73
-#define NUM_MULTIPLY        74
-#define NUM_MINUS           75
-#define NUM_PLUS            76
-#define NUM_ENTER           77
+#define NUM_DIVIDE          101
+#define NUM_MULTIPLY        102
+#define NUM_MINUS           103
+#define NUM_PLUS            104
+#define NUM_ENTER           105
 
-#define KEY_ENTER           78
+#define KEY_ENTER           73
 
-#define PRINT_SCREEN        100
-#define PAUSE               101
+#define PRINT_SCREEN        74
+#define SYS_REQUEST         75
+#define PAUSE               76
 
 
 #endif /** _KEYCODES_H */
