@@ -5,6 +5,8 @@
 #ifndef _PS2_H
 #define _PS2_H
 
+#include "stdint.h"
+
 /**********************************************************/
 
 /** ports used by the 8042 controller. Note that port 0x64 links to two
@@ -39,6 +41,14 @@
 #define ENABLE_IRQ1             0x01
 #define ENABLE_IRQ12            0x02
 #define TRANSLATION             0x40
+
+
+/**********************************************************/
+
+void ps2_initialise (void);
+void enable_keyboard (void);
+uint8_t ps2_get (void);
+void ps2_send (uint16_t port, uint8_t data);
 
 
 /**********************************************************/
