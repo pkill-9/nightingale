@@ -55,4 +55,22 @@ _inb:
 
 /**********************************************************/
 
+/**
+ *  void disable_interrupts (void)
+ *
+ *  disables most interrupts by executing the cli instruction, then
+ *  returns.
+ */
+    .globl _disable_interrupts
+_disable_interrupts:
+    push    %ebp
+    mov     %esp, %ebp
+
+    cli
+
+    leave
+    ret
+
+/**********************************************************/
+
 /** vim: set ts=4 sw=4 et : */
