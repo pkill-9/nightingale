@@ -8,6 +8,22 @@
 
 /**********************************************************/
 
+/**
+ *  This function sets up the environment for the kernel to run. Most of
+ *  the actual work is done in other initialise functions which are called
+ *  here.
+ */
+    PUBLIC void
+nightingale_initialise (void)
+{
+    vga_initialise ();
+    pic_initialise ();
+    ps2_initialise ();
+    initialise_keyboard ();
+}
+
+/**********************************************************/
+
     PUBLIC void
 nightingale_main (void)
 {
