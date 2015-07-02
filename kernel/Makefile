@@ -1,15 +1,16 @@
-SRC = descriptors.c output.c protect.c utils.c vga.c main.c
+SRC = descriptors.c output.c protect.c utils.c vga.c main.c keyboard.c \
+      ps2.c
 OBJS = descriptors.o io.o output.o main.o memutils.o protect.o start.o \
-       utils.o vga.o
+       utils.o vga.o keyboard.o ps2.o irqs.o
 CC = gcc
-AS = as
+AS = gcc
 CFLAGS = -fno-hosted -fleading-underscore -nostdlib -Wall --std=c99
 
 
 all:		nightingale
 
 %.o:		%.s
-	$(AS) $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 nightingale:	depend $(OBJS)
 	ld --script=link.ld -o nightingale $(OBJS)
