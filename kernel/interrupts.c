@@ -66,6 +66,62 @@ pic_initialise (void)
 /**********************************************************/
 
 /**
+ *  Enable the specified IRQ line by clearing the bit in the corresponding
+ *  controller's interrupt mask register.
+ */
+    PUBLIC void
+enable_irq (irq)
+    int irq;                    // between 0 and 15.
+{
+    uint16_t mask_port;
+    uint8_t imr;
+
+    // choose which controller based on the IRQ.
+    mask_port = (irq > 7)? SLAVE_DATA : MASTER_DATA;
+
+    // if the IRQ is on the slave controller, figure out which IRQ line on
+    // the slave is it. 8 lines per controller chip, so...
+    irq %= 8;
+
+    imr = inb (mask_port);
+
+    // if the IRQ is already enabled, we can skip a slow port operation.
+    if (imr & (1 << irq) == 0)
+        return;
+
+    outb (mask_port, imr & ~(1 << irq));
+}
+
+/**********************************************************/
+
+/**
+ *  Disable an interrupt by setting the corresponding interrupt mask 
+ *  register bit.
+ */
+    PUBLIC void
+disable_irq (irq)
+    int irq;                    // between 0 and 15
+{
+    uint16_t mask_port;
+    uint8_t imr;
+
+    // most of this is very similar to enable_irq, but we want to set the
+    // bit in the mask register, not clear it.
+    mask_port = (irq > 7)? SLAVE_DATA : MASTER_DATA;
+    irq %= 8;
+
+    imr = inb (mask_port);
+
+    // test if the bit is already set.
+    if (imr & (1 << irq) != 0)
+        return;
+
+    outb (mask_port, imr | (1 << irq))
+}
+
+/**********************************************************/
+
+/**
  *  Inserts a new hook into the list for the given IRQ.
  */
     PUBLIC void
