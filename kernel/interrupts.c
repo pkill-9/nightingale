@@ -6,7 +6,14 @@
 
 #include "interrupts.h"
 #include "io.h"
+#include "stdint.h"
 #include "utils.h"
+
+/**********************************************************/
+
+PRIVATE void end_of_interrupt (int irq);
+PRIVATE bool spurious_interrupt (int irq);
+
 
 /**********************************************************/
 
@@ -94,11 +101,93 @@ call_handlers (irq)
 {
     irq_hook_t *hook = irq_hooks [irq];
 
+    // sometimes an interrupt signal goes away before the CPU has time to
+    // respond to the interrupt. In this case, the controller will give
+    // the CPU a fake interrupt number. This function will detect if the
+    // IRQ that was triggered is a genuine interrupt. If the interrupt is
+    // spurious, we do not need to send an EOI to the controller, or run
+    // any handler, so we will just return to the service routine.
+    //
+    // Spurious interrupts can be caused by software sending EOI at the
+    // wrong time, or less commonly noise on the interrupt lines.
+    if (spurious_interrupt (irq))
+        return;
+
     while (hook != NULL)
     {
         (*hook->handler) (hook);
         hook = hook->next;
     }
+
+    end_of_interrupt (irq);
+}
+
+/**********************************************************/
+
+/**
+ *  Sends the end of interrupt command to the relevant interrupt 
+ *  controller chips. For interrupts from the master chip, we only need to
+ *  send the EOI to the master; if the interrupt came from the slave, we
+ *  need to send it to both controllers.
+ */
+    PRIVATE void
+end_of_interrupt (irq)
+    int irq;                    // irq line that was triggered
+{
+    if (irq >= 8)
+        outb (PIC_SLAVE_COMMAND, PIC_EOI);
+
+    outb (PIC_MASTER_COMMAND, PIC_EOI);
+}
+
+/**********************************************************/
+
+/**
+ *  Test if the interrupt that just occurred was a spurious interrupt.
+ *  Sometimes if there is noise on an IRQ line, or software issues an EOI
+ *  command at the wrong time, the interrupt controller will detect an
+ *  interrupt signal, but it disappears before the CPU has time to 
+ *  respond. In this case, the controller will report that the interrupt
+ *  came from the lowest priority line on the chip (IRQ 7 or 15 for master
+ *  and slave respectively). We can tell if the interrupt is spurious by
+ *  checking the controller's In Service Register: this register has a bit
+ *  for each IRQ on the controller, which is set when the IRQ is being
+ *  serviced. In the case of spurious interrupts, the ISR bit will be
+ *  clear.
+ */
+    PRIVATE bool
+spurious_interrupt (irq)
+    int irq;                    // can be any IRQ line from 0 to 15.
+{
+    uint16_t command_port;
+    uint8_t isr;
+
+    // spurious interrupts only happen on IRQ 7 or 15, so any other IRQ
+    // will be considered to be genuine.
+    if (irq != 7 || irq != 15)
+        return false;
+
+    // do we want the ISR from the master controller or the slave?
+    command_port = (irq == 7)? PIC_MASTER_COMMAND : PIC_SLAVE_COMMAND;
+
+    // get the contents of the in service register.
+    outb (command_port, READ_ISR);
+    isr = inb (command_port);
+
+    // check bit 7, corresponding to the lowest priority IRQ.
+    if ((isr & 0x80) != 0)
+    {
+        // one slight complication is that if the spurious interrupt came
+        // from the slave controller, the slave will not expect an EOI,
+        // but the master will still expect an EOI, since it only knows
+        // that the slave raised an IRQ.
+        if (irq == 15)
+            outb (PIC_MASTER_COMMAND, PIC_EOI);
+
+        return true;
+    }
+
+    return false;
 }
 
 /**********************************************************/
