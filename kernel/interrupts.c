@@ -42,6 +42,25 @@ pic_initialise (void)
     // we start with no handlers registered.
     for (int i = 0; i < NUM_IRQS; i ++)
         irq_hooks [i] = NULL;
+
+    // initialise the interrupt controller chips.
+    outb (MASTER_COMMAND, PIC_INITIALISE | WITH_ICW4);
+    outb (SLAVE_COMMAND, PIC_INITIALISE | WITH_ICW4);
+    outb (MASTER_DATA, MASTER_BASE_VECTOR);
+    outb (SLAVE_DATA, SLAVE_BASE_VECTOR);
+
+    // tell the controllers that there is a slave PIC at IRQ2
+    outb (MASTER_DATA, 4);
+    outb (SLAVE_DATA, 2);
+
+    outb (MASTER_DATA, ICW4_8086);
+    outb (SLAVE_DATA, ICW4_8086);
+
+    // set the initial interrupt mask, with everything disabled, except
+    // for the cascade IRQ. When devices are initialised, they will enable
+    // their IRQ line separately.
+    outb (MASTER_DATA, 0xFF & ~(1 << CASCADE_IRQ));
+    outb (SLAVE_DATA, 0xFF);
 }
 
 /**********************************************************/
@@ -135,9 +154,9 @@ end_of_interrupt (irq)
     int irq;                    // irq line that was triggered
 {
     if (irq >= 8)
-        outb (PIC_SLAVE_COMMAND, PIC_EOI);
+        outb (SLAVE_COMMAND, EOI);
 
-    outb (PIC_MASTER_COMMAND, PIC_EOI);
+    outb (MASTER_COMMAND, EOI);
 }
 
 /**********************************************************/
@@ -168,7 +187,7 @@ spurious_interrupt (irq)
         return false;
 
     // do we want the ISR from the master controller or the slave?
-    command_port = (irq == 7)? PIC_MASTER_COMMAND : PIC_SLAVE_COMMAND;
+    command_port = (irq == 7)? MASTER_COMMAND : SLAVE_COMMAND;
 
     // get the contents of the in service register.
     outb (command_port, READ_ISR);
@@ -182,7 +201,7 @@ spurious_interrupt (irq)
         // but the master will still expect an EOI, since it only knows
         // that the slave raised an IRQ.
         if (irq == 15)
-            outb (PIC_MASTER_COMMAND, PIC_EOI);
+            outb (MASTER_COMMAND, EOI);
 
         return true;
     }
