@@ -1,7 +1,7 @@
 SRC = descriptors.c output.c protect.c utils.c vga.c main.c keyboard.c \
-      ps2.c
+      ps2.c interrupts.c
 OBJS = descriptors.o io.o output.o main.o memutils.o protect.o start.o \
-       utils.o vga.o keyboard.o ps2.o irqs.o
+       utils.o vga.o keyboard.o ps2.o interrupts.o irqs.o
 CC = gcc
 AS = gcc
 CFLAGS = -fno-hosted -fleading-underscore -nostdlib -Wall --std=c99
