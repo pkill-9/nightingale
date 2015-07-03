@@ -13,6 +13,7 @@
 #include "keycodes.h"
 #include "scancodes.h"
 #include "ps2.h"
+#include "interrupts.h"
 #include "stdint.h"
 #include "utils.h"
 
@@ -46,12 +47,12 @@ keyhandler_t;
 
 /**********************************************************/
 
-PRIVATE void initialise_keyboard (void);
+PRIVATE void keyboard_handler (void);
 PRIVATE void init_keymap (void);
 PRIVATE void clear_keyhandlers (void);
 
-PRIVATE void keypressed (const uint8_t *scancode, const keycode_t *map);
-PRIVATE void keyreleased (const uint8_t *scancode, const keycode_t *map);
+PRIVATE void keypressed (const keycode_t *map);
+PRIVATE void keyreleased (const keycode_t *map);
 
 PRIVATE void alphabet_key_pressed (keycode_t key);
 PRIVATE void number_key_pressed (keycode_t key);
@@ -87,8 +88,25 @@ PRIVATE keyhandler_t key_event_handlers [NUM_KEYCODES];
 PRIVATE keycode_t scancode_map [256] = {0};
 PRIVATE keycode_t alt_scancode_map [256] = {0};
 
+PRIVATE irq_hook_t keyboard_hook;
+
 PRIVATE char character;
 
+
+/**********************************************************/
+
+/**
+ *  Keyboard IRQ handler. When a key is pressed, the keyboard triggers an
+ *  interrupt, which results in this function being called. Here we will
+ *  fetch the scancode from the keyboard and translate that into a 
+ *  keypress or release.
+ */
+    PRIVATE void
+keyboard_handler (void)
+{
+    keypressed (scancode_map);
+    clear_buffer ();
+}
 
 /**********************************************************/
 
@@ -99,26 +117,26 @@ PRIVATE char character;
  *  this function will call the keyreleased function to handle it.
  */
     PRIVATE void
-keypressed (scancode, map)
-    const uint8_t *scancode;    // scancode from the keyboard.
+keypressed (map)
     const keycode_t *map;       // scancode/keycode mapping to use.
 {
     keycode_t keycode;
+    uint8_t scancode = ps2_get ();
 
     // check the first byte of the scancode for prefixes that indicate to
     // use the extended keymap, or that it is a key release.
-    switch (*scancode)
+    switch (scancode)
     {
     case 0xE0:
-        keypressed (scancode + 1, alt_scancode_map);
+        keypressed (alt_scancode_map);
         break;
 
     case 0xF0:
-        keyreleased (scancode + 1, map);
+        keyreleased (map);
         break;
 
     default:
-        keycode = map [*scancode];
+        keycode = map [scancode];
 
         if (key_event_handlers [keycode].onpress != NULL)
             key_event_handlers [keycode].onpress (keycode);
@@ -134,22 +152,22 @@ keypressed (scancode, map)
  *  keypressed function.
  */
     PRIVATE void
-keyreleased (scancode, map)
-    const uint8_t *scancode;    // scancode without the prefix.
+keyreleased (map)
     const keycode_t *map;       // scancode-keycode mapping to use.
 {
     keycode_t keycode;
+    uint8_t scancode = ps2_get ();
 
     // XXX: extended scancode map prefix comes before the key release
     // prefix, so we should never see an 0xE0 prefix here, right?
-    switch (*scancode)
+    switch (scancode)
     {
     case 0xE0:
-        keyreleased (scancode + 1, alt_scancode_map);
+        keyreleased (alt_scancode_map);
         break;
 
     default:
-        keycode = map [*scancode];
+        keycode = map [scancode];
 
         if (key_event_handlers [keycode].onrelease != NULL)
             key_event_handlers [keycode].onrelease (keycode);

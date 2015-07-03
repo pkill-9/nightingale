@@ -115,7 +115,7 @@ set_config (void)
 /**
  *  Discard any input from devices that may be waiting in the buffer.
  */
-    PRIVATE void
+    PUBLIC void
 clear_buffer (void)
 {
     uint8_t status = inb (PS2_STATUS);
