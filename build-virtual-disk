@@ -1,8 +1,39 @@
 #!  /bin/bash
 
+# first make sure that everything has been compiled.
 make
+
+# now prepare a disk image file, mount it and install grub. Note that
+# this bit involves the use of loop devices to make an ordinary file look
+# like a device, and the mount command, both of which can only be done by
+# root. So, you will need to run this script via sudo.
+#
+# If you don't understand any of that, go look it up.
 make format-disk
 make mount-disk
 make install-grub
+
+# now we have a virtual disk file with GRUB installed on it, and an
+# otherwise empty filesystem. We need to copy our kernel and our grub
+# config file on.
+
+# first the kernel. Check if the directory already exists on the disk
+# image.
+if ! test -d ./vfs/kernel
+then
+    mkdir ./vfs/kernel
+fi
+
+cp ./kernel/nightingale ./vfs/kernel
+
+
+# and the grub config file.
+if ! test -d ./vfs/boot/grub
+then
+    mkdir ./vfs/boot/grub
+fi
+
+cp ./boot/grub.cfg ./vfs/boot/grub
+
 
 # vim ft=sh ts=4 sw=4 et
