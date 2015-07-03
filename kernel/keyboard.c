@@ -12,8 +12,19 @@
 
 #include "keycodes.h"
 #include "scancodes.h"
+#include "ps2.h"
 #include "stdint.h"
 #include "utils.h"
+
+
+/**********************************************************/
+
+// IO port used by a PS/2 keyboard. Note that this is the same port as
+// the controller's data port.
+#define KEYBOARD                0x60
+
+// keyboard commands.
+#define SET_LEDS                0xED
 
 
 /**********************************************************/
@@ -39,8 +50,8 @@ PRIVATE void initialise_keyboard (void);
 PRIVATE void init_keymap (void);
 PRIVATE void clear_keyhandlers (void);
 
-PRIVATE void keypressed (const char *scancode, const keycode_t *map);
-PRIVATE void keyreleased (const char *scancode, const keycode_t *map);
+PRIVATE void keypressed (const uint8_t *scancode, const keycode_t *map);
+PRIVATE void keyreleased (const uint8_t *scancode, const keycode_t *map);
 
 PRIVATE void alphabet_key_pressed (keycode_t key);
 PRIVATE void number_key_pressed (keycode_t key);
@@ -71,10 +82,12 @@ PRIVATE bool caps_lock, num_lock, scroll_lock;
  *  Array of functions to call on a key press or release; one for each
  *  keycode.
  */
-PRIVATE keyhandler_t key_event_handlers [NUMKEYCODES];
+PRIVATE keyhandler_t key_event_handlers [NUM_KEYCODES];
 
-PRIVATE keycode_t scancode_map [NUM_SCANCODES] = {0};
-PRIVATE keycode_t alt_scancode_map [NUM_SCANCODES] = {0};
+PRIVATE keycode_t scancode_map [256] = {0};
+PRIVATE keycode_t alt_scancode_map [256] = {0};
+
+PRIVATE char character;
 
 
 /**********************************************************/
@@ -87,7 +100,7 @@ PRIVATE keycode_t alt_scancode_map [NUM_SCANCODES] = {0};
  */
     PRIVATE void
 keypressed (scancode, map)
-    const char *scancode;       // scancode from the keyboard.
+    const uint8_t *scancode;    // scancode from the keyboard.
     const keycode_t *map;       // scancode/keycode mapping to use.
 {
     keycode_t keycode;
@@ -105,7 +118,7 @@ keypressed (scancode, map)
         break;
 
     default:
-        keycode = map [(uint8_t) *scancode];
+        keycode = map [*scancode];
 
         if (key_event_handlers [keycode].onpress != NULL)
             key_event_handlers [keycode].onpress (keycode);
@@ -122,7 +135,7 @@ keypressed (scancode, map)
  */
     PRIVATE void
 keyreleased (scancode, map)
-    const char *scancode;       // scancode without the prefix.
+    const uint8_t *scancode;    // scancode without the prefix.
     const keycode_t *map;       // scancode-keycode mapping to use.
 {
     keycode_t keycode;
@@ -136,7 +149,7 @@ keyreleased (scancode, map)
         break;
 
     default:
-        keycode = map [(uint8_t) *scancode];
+        keycode = map [*scancode];
 
         if (key_event_handlers [keycode].onrelease != NULL)
             key_event_handlers [keycode].onrelease (keycode);
@@ -180,11 +193,25 @@ init_keymap (void)
     PRIVATE void
 clear_keyhandlers (void)
 {
-    for (int i = 0; i < NUMKEYCODES; i ++)
+    for (int i = 0; i < NUM_KEYCODES; i ++)
     {
         key_event_handlers [i].onpress = NULL;
         key_event_handlers [i].onrelease = NULL;
     }
+}
+
+/**********************************************************/
+
+/**
+ *  Turn the CAPS LOCK and NUM LOCK leds on or off.
+ */
+    PRIVATE void
+set_keyboard_leds (void)
+{
+    uint8_t ledstates = (scroll_lock | num_lock << 1 | caps_lock << 2);
+
+    ps2_send (KEYBOARD, SET_LEDS);
+    ps2_send (KEYBOARD, ledstates);
 }
 
 /**********************************************************/
@@ -199,16 +226,16 @@ alphabet_key_pressed (key)
     const char letters [] = "qwertyuiopasdfghjklzxcvbnm";
     const char shifted [] = "QWERTYUIOPASDFGHJKLZXCVBNM";
 
-    if (shift_pressed ^ caps_lock) 
+    if ((shift_pressed ^ caps_lock) && !control_pressed) 
     {
-        character = shifted [key - ALPHABET_BASE];
+        character = shifted [key - FIRST_QWERTY];
         return;
     }
 
-    character = letters [key - ALPHABET_BASE];
+    character = letters [key - FIRST_QWERTY];
 
     if (control_pressed)
-        character -= CONTROL_SHIFT;
+        character -= 'a' - 1;
 }
 
 /**********************************************************/
@@ -225,11 +252,11 @@ number_key_pressed (key)
 
     if (shift_pressed)
     {
-        character = shifted [key - NUMKEY_BASE];
+        character = shifted [key - FIRST_NUM_KEY];
         return;
     }
 
-    character = normal [key - NUMKEY_BASE];
+    character = normal [key - FIRST_NUM_KEY];
 }
 
 /**********************************************************/
@@ -246,7 +273,7 @@ numpad_key_pressed (key)
 
     if (num_lock)
     {
-        character = normal [key - NUMPAD_BASE];
+        character = normal [key - FIRST_NUMPAD];
     }
 }
 
@@ -264,11 +291,11 @@ punctuation_key_pressed (key)
 
     if (shift_pressed)
     {
-        character = shifted [key - PUNCTUATION_BASE];
+        character = shifted [key - FIRST_PUNCTUATION];
         return;
     }
 
-    character = normal [key - PUNCTUATION_BASE];
+    character = normal [key - FIRST_PUNCTUATION];
 }
 
 /**********************************************************/
@@ -345,7 +372,7 @@ modifier_released (key)
 set_qwerty_handlers (void)
 {
     // alphabet keys only need a key press handler.
-    for (int i = QWERTY_BASE; i <= QWERTY_LIMIT; i ++)
+    for (int i = FIRST_QWERTY; i <= LAST_QWERTY; i ++)
         key_event_handlers [i].onpress = &alphabet_key_pressed;
 }
 
@@ -354,7 +381,7 @@ set_qwerty_handlers (void)
     PRIVATE void
 set_numkey_handlers (void)
 {
-    for (int i = NUMKEY_BASE; i <= LAST_NUMKEY; i ++)
+    for (int i = FIRST_NUM_KEY; i <= LAST_NUM_KEY; i ++)
         key_event_handlers [i].onpress = &number_key_pressed;
 }
 
@@ -363,7 +390,7 @@ set_numkey_handlers (void)
     PRIVATE void
 set_punctuation_handlers (void)
 {
-    for (int i = PUNCTUATION_BASE; i <= LAST_PUNCTUATION; i ++)
+    for (int i = FIRST_PUNCTUATION; i <= LAST_PUNCTUATION; i ++)
         key_event_handlers [i].onpress = &punctuation_key_pressed;
 }
 
@@ -372,8 +399,8 @@ set_punctuation_handlers (void)
     PRIVATE void
 set_numpad_handlers (void)
 {
-    for (int i = NUMPAD_BASE; i <= LAST_NUMPAD; i ++)
-        key_event_handlers [i].onpressed = &numpad_key_pressed;
+    for (int i = FIRST_NUMPAD; i <= LAST_NUMPAD; i ++)
+        key_event_handlers [i].onpress = &numpad_key_pressed;
 }
 
 /**********************************************************/
@@ -382,10 +409,10 @@ set_numpad_handlers (void)
 set_modifier_handlers (void)
 {
     // modifier keys need to handle press and release.
-    for (int i = MODIFIER_BASE; i <= LAST_MODIFIER; i ++)
+    for (int i = FIRST_MODIFIER; i <= LAST_MODIFIER; i ++)
     {
-        key_event_handlers [i].onpress = &modifier_key_pressed;
-        key_event_handlers [i].onrelease = &modifier_key_released;
+        key_event_handlers [i].onpress = &modifier_pressed;
+        key_event_handlers [i].onrelease = &modifier_released;
     }
 }
 

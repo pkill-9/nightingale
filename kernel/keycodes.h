@@ -17,6 +17,8 @@
 typedef unsigned short keycode_t;
 
 
+#define NUM_KEYCODES        106
+
 #define ESC                 1
 
 /** function keys */
@@ -46,6 +48,9 @@ typedef unsigned short keycode_t;
 #define KEY_PERIOD          23
 #define KEY_FORWARD_SLASH   24
 
+#define FIRST_PUNCTUATION   KEY_TILDE
+#define LAST_PUNCTUATION    KEY_FORWARD_SLASH
+
 /** keyboard number keys (not the numpad on the right) */
 #define KEY_1               25
 #define KEY_2               26
@@ -57,6 +62,9 @@ typedef unsigned short keycode_t;
 #define KEY_8               32
 #define KEY_9               33
 #define KEY_0               34
+
+#define FIRST_NUM_KEY       KEY_1
+#define LAST_NUM_KEY        KEY_0
 
 /** letter keys */
 #define KEY_Q               35
@@ -86,6 +94,9 @@ typedef unsigned short keycode_t;
 #define KEY_N               59
 #define KEY_M               60
 
+#define FIRST_QWERTY        KEY_Q
+#define LAST_QWERTY         KEY_M
+
 /** lock keys */
 #define CAPS_LOCK           61
 #define NUM_LOCK            62
@@ -98,6 +109,9 @@ typedef unsigned short keycode_t;
 #define RIGHT_SHIFT         67
 #define RIGHT_CTRL          68
 #define RIGHT_ALT           69
+
+#define FIRST_MODIFIER      LEFT_SHIFT
+#define LAST_MODIFIER       RIGHT_ALT
 
 #define SPACE               70
 #define BACKSPACE           71
@@ -132,6 +146,9 @@ typedef unsigned short keycode_t;
 #define NUM_MINUS           103
 #define NUM_PLUS            104
 #define NUM_ENTER           105
+
+#define FIRST_NUMPAD        NUM_0
+#define LAST_NUMPAD         NUM_ENTER
 
 #define KEY_ENTER           73
 
