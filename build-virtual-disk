@@ -1,0 +1,8 @@
+#!  /bin/bash
+
+make
+make format-disk
+make mount-disk
+make install-grub
+
+# vim ft=sh ts=4 sw=4 et
