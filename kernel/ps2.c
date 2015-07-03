@@ -12,7 +12,6 @@
 
 PRIVATE void disable_ports (void);
 PRIVATE void set_config (void);
-PRIVATE void clear_buffer (void);
 
 PRIVATE uint8_t read_config_register (void);
 PRIVATE void write_config_register (uint8_t value);
