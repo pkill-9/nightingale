@@ -15,6 +15,7 @@
 #include "scancodes.h"
 #include "ps2.h"
 #include "interrupts.h"
+#include "io.h"
 #include "stdint.h"
 #include "utils.h"
 
@@ -91,6 +92,7 @@ PRIVATE keycode_t alt_scancode_map [256] = {0};
 
 PRIVATE irq_hook_t keyboard_hook;
 
+PRIVATE volatile bool have_char = false;
 PRIVATE char character;
 
 
@@ -120,6 +122,29 @@ initialise_keyboard (void)
     set_numpad_handlers ();
     set_modifier_handlers ();
     set_lock_handlers ();
+}
+
+/**********************************************************/
+
+/**
+ *  Waits for the user to press a key then returns the character that was
+ *  entered. Note that this function blocks until such input is received.
+ */
+    PUBLIC char
+read_char (void)
+{
+    // test the flag to see if a character has been entered. If not, the
+    // wait function will put the CPU to sleep until an interrupt comes in
+    // from hardware (any interrupt). When the interrupt handler has 
+    // finished, we will repeat, testing if we now have a character ready.
+    while (have_char != true)
+        wait ();
+
+    // once we have got the character, reset the flag so that the next
+    // call to read_char will wait for a new character.
+    have_char = false;
+
+    return character;
 }
 
 /**********************************************************/
@@ -284,6 +309,8 @@ alphabet_key_pressed (key)
 
     if (control_pressed)
         character -= 'a' - 1;
+
+    have_char = true;
 }
 
 /**********************************************************/
@@ -305,6 +332,8 @@ number_key_pressed (key)
     }
 
     character = normal [key - FIRST_NUM_KEY];
+
+    have_char = true;
 }
 
 /**********************************************************/
@@ -322,6 +351,7 @@ numpad_key_pressed (key)
     if (num_lock)
     {
         character = normal [key - FIRST_NUMPAD];
+        have_char = true;
     }
 }
 
@@ -336,6 +366,8 @@ punctuation_key_pressed (key)
 {
     const char normal [] = "`-=[]\\;',./";
     const char shifted [] = "~_+{}|:\"<>?";
+
+    have_char = true;
 
     if (shift_pressed)
     {
