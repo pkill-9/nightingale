@@ -4,6 +4,9 @@
 
 #include "output.h"
 #include "vga.h"
+#include "keyboard.h"
+#include "interrupts.h"
+#include "ps2.h"
 #include "utils.h"
 
 /**********************************************************/
@@ -27,7 +30,6 @@ nightingale_initialise (void)
     PUBLIC void
 nightingale_main (void)
 {
-    vga_initialise ();
     print_string ("It Works.\n");
     print_string ("Another line.\n");
 }
