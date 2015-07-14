@@ -10,6 +10,7 @@
  *  such as CTRL or SHIFT keys.
  */
 
+#include "keyboard.h"
 #include "keycodes.h"
 #include "scancodes.h"
 #include "ps2.h"
@@ -47,7 +48,7 @@ keyhandler_t;
 
 /**********************************************************/
 
-PRIVATE void keyboard_handler (void);
+PRIVATE void keyboard_handler (struct irq_hook *hook);
 PRIVATE void init_keymap (void);
 PRIVATE void clear_keyhandlers (void);
 
@@ -96,13 +97,42 @@ PRIVATE char character;
 /**********************************************************/
 
 /**
+ *  Initialise the kernel mode keyboard driver. This involves setting up
+ *  an interrupt handler, and also setting up the data structures for
+ *  translating key events into characters.
+ *
+ *  Note that interrupts and the PS/2 controller must be initialised 
+ *  before this function is called.
+ */
+    PUBLIC void
+initialise_keyboard (void)
+{
+    add_handler (&keyboard_hook, 2, keyboard_handler);
+    enable_irq (2);
+    ps2_enable_keyboard_irq ();
+
+    init_keymap ();
+    clear_keyhandlers ();
+
+    set_qwerty_handlers ();
+    set_numkey_handlers ();
+    set_punctuation_handlers ();
+    set_numpad_handlers ();
+    set_modifier_handlers ();
+    set_lock_handlers ();
+}
+
+/**********************************************************/
+
+/**
  *  Keyboard IRQ handler. When a key is pressed, the keyboard triggers an
  *  interrupt, which results in this function being called. Here we will
  *  fetch the scancode from the keyboard and translate that into a 
  *  keypress or release.
  */
     PRIVATE void
-keyboard_handler (void)
+keyboard_handler (hook)
+    struct irq_hook *hook;      // this will be the keyboard hook
 {
     keypressed (scancode_map);
     clear_buffer ();
