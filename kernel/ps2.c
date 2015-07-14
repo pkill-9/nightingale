@@ -37,7 +37,7 @@ ps2_initialise (void)
  *  Enable the keyboard interrupt from the PS/2 controller.
  */
     PUBLIC void
-enable_keyboard_irq (void)
+ps2_enable_keyboard_irq (void)
 {
     uint8_t config = read_config_register ();
     config |= ENABLE_IRQ1;

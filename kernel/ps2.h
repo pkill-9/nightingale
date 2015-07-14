@@ -46,7 +46,7 @@
 /**********************************************************/
 
 void ps2_initialise (void);
-void enable_keyboard (void);
+void ps2_enable_keyboard_irq (void);
 uint8_t ps2_get (void);
 void ps2_send (uint16_t port, uint8_t data);
 void clear_buffer (void);
