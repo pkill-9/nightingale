@@ -73,4 +73,30 @@ _disable_interrupts:
 
 /**********************************************************/
 
+/**
+ *  void wait (void)
+ *
+ *  Puts the CPU to sleep until an interrupt comes in, inevitably from an
+ *  external source (hardware). This is very useful to implement blocking
+ *  functions (eg reading from the keyboard) in kernel mode.
+ */
+    .globl _wait
+_wait:
+    push    %ebp
+    mov     %esp, %ebp
+
+# save the EFLAGS register, including the interrupts enabled bit. In order
+# for the CPU to be woken by a hardware interrupt, we have to enable
+# interrupts in the EFLAGS register, so by saving the old state, we can
+# make sure that EFLAGS is unchanged when this function returns.
+    pushf
+    sti
+    hlt
+    popf
+
+    leave
+    ret
+
+/**********************************************************/
+
 /** vim: set ts=4 sw=4 et : */
