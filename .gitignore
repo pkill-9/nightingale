@@ -5,7 +5,7 @@
 *.swp
 
 # dependency files used with make.
-depend
+.depend/
 
 # cscope cross references.
 cscope.out
