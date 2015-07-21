@@ -19,6 +19,8 @@ struct idt_entry idt [NUM_IDT_ENTRIES];
 
 
 void initialise_tables (void);
+void set_interrupt_gate (uint8_t vector, void *handler, uint8_t privilege,
+  uint8_t gate_type);
 
 
 #endif /** _PROTECT_H */

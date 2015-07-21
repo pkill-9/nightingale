@@ -35,6 +35,34 @@ initialise_tables (void)
 /**********************************************************/
 
 /**
+ *  Initialise the IDT entry at offset given by vector to invoke the
+ *  handler at the specified address. Note that this function will modify
+ *  the IDT entry, and will set the present bit. The caller privilege
+ *  level and gate type will also be set to the values specified in this
+ *  functions arguments.
+ */
+    PUBLIC void
+set_interrupt_gate (vector, handler, privilege, gate_type)
+    uint8_t vector;             // offset into the IDT
+    void *handler;              // address of handler function
+    uint8_t privilege;          // ring level required to use the trap
+    uint8_t gate_type;          // hardware irq, or software trap
+{
+    // set the gate privilege and type.
+    idt [vector].attributes |= (privilege << 7) & 0x70;
+    idt [vector].attributes |= gate_type & 0x0F;
+
+    // store the 32 bit address of the handler.
+    idt [vector].handler_low = (int) handler & 0x0000FFFF;
+    idt [vector].handler_high = ((int) handler >> 16) & 0x0000FFFF;
+
+    // make sure that the present bit of the specified IDT entry is set.
+    idt [vector].attributes |= IDT_PRESENT;
+}
+
+/**********************************************************/
+
+/**
  *  Initialise the GDT with 3 entries, the null entry which is always
  *  kept in GDT[0], and code and data segments in 1 and 2. The code and
  *  data segments will have a base of 0 and limit of 4 GiB, hence the name
