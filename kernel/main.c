@@ -30,8 +30,15 @@ nightingale_initialise (void)
     PUBLIC void
 nightingale_main (void)
 {
-    print_string ("It Works.\n");
-    print_string ("Another line.\n");
+    char ch;
+
+    print_string ("Waiting for text input\n");
+
+    while (true)
+    {
+        ch = read_char ();
+        print_char (ch);
+    }
 }
 
 /**********************************************************/
