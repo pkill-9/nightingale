@@ -6,6 +6,9 @@
 
 #include "interrupts.h"
 #include "io.h"
+#include "irqs.h"
+#include "protect.h"
+#include "descriptors.h"
 #include "stdint.h"
 #include "utils.h"
 
@@ -41,6 +44,7 @@
 
 /**********************************************************/
 
+PRIVATE void install_service_routines (void);
 PRIVATE void end_of_interrupt (int irq);
 PRIVATE bool spurious_interrupt (int irq);
 
@@ -51,6 +55,15 @@ PRIVATE bool spurious_interrupt (int irq);
 // using the IRQ number as an index, then step along the list and run all
 // the hook functions.
 PRIVATE irq_hook_t *irq_hooks [NUM_IRQS];
+
+// array of pointers to interrupt service routines. The IDT will need to
+// be configured so that the appropriate interrupt descriptors reference
+// the corresponding service routine.
+PRIVATE void (*service_routines []) (void) = 
+{
+    irq0, irq1, irq2, irq3, irq4, irq5, irq6, irq7, irq8, irq9, irq10,
+    irq11, irq12, irq13, irq14, irq15
+};
 
 
 /**********************************************************/
@@ -91,6 +104,28 @@ pic_initialise (void)
     // their IRQ line separately.
     outb (MASTER_DATA, 0xFF & ~(1 << CASCADE_IRQ));
     outb (SLAVE_DATA, 0xFF);
+
+    // now configure all the service routines in the interrupt descriptor
+    // table.
+    install_service_routines ();
+}
+
+/**********************************************************/
+
+/**
+ *  Configures the IDT entries for hardware interrupt handlers. This
+ *  function will modify entries in the region from MASTER_BASE_VECTOR
+ *  of length 15 entries. Each IDT entry will be given a caller privilege
+ *  level of 0 and a type of 0xE for an interrupt gate.
+ */
+    PRIVATE void
+install_service_routines (void)
+{
+    for (int i = 0; i < NUM_IRQS; i ++)
+    {
+        set_interrupt_gate (MASTER_BASE_VECTOR + i, service_routines [i],
+          0, INTERRUPT_GATE);
+    }
 }
 
 /**********************************************************/

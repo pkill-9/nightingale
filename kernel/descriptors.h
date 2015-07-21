@@ -98,7 +98,9 @@ __attribute__ ((packed));
 #define IDT_RING_LEVEL(x)       (((x) & 0x03) << 5)
 
 /** define whether this is a trap or task call */
-#define IDT_TYPE(x)             ((x) & 0x0F)
+#define INTERRUPT_GATE          0xE
+#define TRAP_GATE               0xF
+#define TASK_GATE               0x5
 
 
 /**********************************************************/
