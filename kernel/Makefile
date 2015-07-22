@@ -1,4 +1,4 @@
-OBJS = descriptors.o io.o output.o main.o memutils.o protect.o start.o \
+OBJS = start.o descriptors.o io.o output.o main.o memutils.o protect.o \
        utils.o vga.o keyboard.o ps2.o interrupts.o irqs.o
 CC = gcc
 AS = gcc

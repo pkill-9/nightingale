@@ -3,6 +3,7 @@
  */
 
 #include "output.h"
+#include "protect.h"
 #include "vga.h"
 #include "keyboard.h"
 #include "interrupts.h"
@@ -19,6 +20,7 @@
     PUBLIC void
 nightingale_initialise (void)
 {
+    initialise_tables ();
     vga_initialise ();
     pic_initialise ();
     ps2_initialise ();
