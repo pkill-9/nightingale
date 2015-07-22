@@ -1,5 +1,5 @@
 SUBDIRS = kernel
-GRUB_INSTALL_FLAGS = --boot-directory=./vfs/boot --no-floppy \
+GRUB_INSTALL_FLAGS = --boot-directory=./vfs/nightingale/boot --no-floppy \
 		     --modules="normal part_msdos ext2 multiboot"
 
 
