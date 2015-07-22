@@ -10,10 +10,7 @@ $(SUBDIRS):
 
 # create and format a disk image, and set it up so that we can treat it
 # as if it is an ordinary block device.
-format-disk:	disk.hdd
-	fdisk disk.hdd
-	losetup /dev/loop0 ./disk.hdd
-	losetup /dev/loop1 ./disk.hdd -o 1048576
+format-disk:	disk.hdd loop-devices
 	mke2fs /dev/loop1
 
 mount-disk:	vfs
@@ -28,6 +25,11 @@ umount:
 
 disk.hdd:
 	dd if=/dev/zero of=disk.hdd bs=1 count=0 seek=1GB
+	fdisk disk.hdd
+
+loop-devices:
+	losetup /dev/loop0 ./disk.hdd
+	losetup /dev/loop1 ./disk.hdd -o 1048576
 
 vfs:
 	mkdir ./vfs
@@ -42,6 +44,6 @@ scrub:		$(SUBDIRS) clean
 	rm -rf vfs
 
 .PHONY:		clean scrub all $(SUBDIRS) format-disk mount-disk umount\
-    install-grub
+    install-grub loop-devices
 
 # vim: ts=8 sw=4 noet
