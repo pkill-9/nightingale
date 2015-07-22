@@ -43,6 +43,23 @@ over_multiboot_header:
     mov     $0x0007FFFF, %esp
     mov     %esp, %ebp
 
+    call    _nightingale_initialise
+
+    lgdt    _gdtr
+    lidt    _idtr
+
+# the only way that we can load a new value into the cs segment register
+# is by doing a far jump:
+    ljmp    $0x08, $reload_cs
+
+reload_cs:
+    mov     $0x10, %ax
+    mov     %ax, %ds
+    mov     %ax, %es
+    mov     %ax, %fs
+    mov     %ax, %gs
+    mov     %ax, %ss
+
     push    %ebx
     call    _nightingale_main
 
